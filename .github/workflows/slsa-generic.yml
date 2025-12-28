@@ -1,54 +1,47 @@
-name: SLSA generic generator
+name: SLSA Generic (artel-demo)
 
 on:
   workflow_dispatch:
-  release:
-    types: [created]
+  push:
+    branches: [ "main" ]
 
 permissions:
-  contents: read
+  contents: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     outputs:
       digests: ${{ steps.hash.outputs.digests }}
-    steps:
-      - uses: actions/checkout@v4
 
-      # ========================================================
-      # Step 1: Build your artifacts
-      # ========================================================
-      - name: Build artifacts
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Prepare artifacts
         run: |
-          # Copy files for signing
+          set -e
           cp artel_mini.py artifact_artel_mini.py
           cp slsa-generic.yml artifact_slsa-generic.yml
-          # Create dummy artifacts for SLSA
-          echo "artifact1" > artifact1
-          echo "artifact2" > artifact2
 
-      # ========================================================
-      # Step 2: Generate subject for SLSA
-      # ========================================================
-      - name: Generate subject for provenance
+      - name: Generate SHA256 digests
         id: hash
         shell: bash
         run: |
           set -euo pipefail
           files="artifact_artel_mini.py artifact_slsa-generic.yml"
-          digests=$(sha256sum $files | awk '{print $1}' | base64)
-          echo "digests=$digests" >> $GITHUB_OUTPUT
-          files=$(ls artifact*)
-          echo "hashes=$(sha256sum $files | base64 -w0)" >> "${GITHUB_OUTPUT}"
+          digests=$(sha256sum $files | awk '{print $1}' | base64 -w0)
+          echo "digests=$digests" >> "$GITHUB_OUTPUT"
 
   provenance:
     needs: build
-    permissions:
-      actions: read
-      id-token: write
-      contents: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.4.0
-    with:
-      base64-subjects: "${{ needs.build.outputs.digests }}"
-      upload-assets: true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate SLSA provenance
+        uses: slsa-framework/slsa-github-generator/actions/generator@v2
+        with:
+          base64-subjects: ${{ needs.build.outputs.digests }}
+          upload-assets: true
