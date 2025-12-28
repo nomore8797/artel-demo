@@ -33,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           files="artifact_artel_mini.py artifact_slsa-generic.yml"
-          digests=$(sha256sum $files | awk '{print $1}' | base64 -w0)
+          digests=$(sha256sum $files | base64 -w0)
           echo "digests=$digests" >> $GITHUB_OUTPUT
 
   provenance:
