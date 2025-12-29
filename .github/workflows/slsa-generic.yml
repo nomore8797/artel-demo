@@ -2,10 +2,8 @@ name: SLSA Generic (artel-demo)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  release:
+    types: [created]
 
 permissions:
   contents: read
@@ -14,6 +12,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      digests: ${{ steps.hash.outputs.digests }}
     steps:
       - uses: actions/checkout@v4
 
@@ -24,16 +24,19 @@ jobs:
         run: |
           cp artel_mini.py artifact_artel_mini.py
           cp slsa-generic.yml artifact_slsa-generic.yml
+          # Дополнительно можно создать тестовые артефакты
+          echo "artifact1" > artifact1
+          echo "artifact2" > artifact2
 
       # ========================================================
-      # Step 2: Генерация SHA256 и base64
+      # Step 2: Генерация SHA256 и base64 для SLSA
       # ========================================================
       - name: Generate digests
         id: hash
         shell: bash
         run: |
           set -euo pipefail
-          files="artifact_artel_mini.py artifact_slsa-generic.yml"
+          files="artifact_artel_mini.py artifact_slsa-generic.yml artifact1 artifact2"
           digests=""
           for f in $files; do
             sum=$(sha256sum "$f" | cut -d ' ' -f1)
