@@ -1,8 +1,8 @@
 #artel-demo
 Research demonstrator: minimal architecture prototype
-git clone https://github.com/<username>/artel-demo.git
-cd artel-demo
-echo "<class Block:
+
+```python
+class Block:
     def __init__(self, name):
         self.name = name
 
@@ -29,7 +29,7 @@ links = [
 ]
 
 for l in links:
-    print(l)>" > artel_mini.py
-git add artel_mini.py
-git commit -m "Add minimal architectural prototype"
-git push
+    print(l)
+```
+
+
