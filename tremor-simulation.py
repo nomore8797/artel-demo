@@ -47,14 +47,39 @@ def equilibrium_cycle(tasks):
     print("=== Final distribution to Platform & Outputs ===")
     show_buffers()
 
-# --- Интерактивная часть ---
-while True:
-    try:
-        n = int(input("Введите количество входящих задач (0 для выхода): "))
-        if n == 0:
+# --- Меню сценариев ---
+def run_scenario():
+    while True:
+        print("\nВыберите сценарий тряски:")
+        print("1 — Базовый сценарий (8 задач)")
+        print("2 — Групповой всплеск (3 группы по 5 задач)")
+        print("3 — Постепенный поток с пиками")
+        print("0 — Выход")
+        
+        choice = input("Ваш выбор: ")
+        
+        if choice == "0":
             print("Выход из симуляции.")
             break
-        tasks = [f"Task{i}" for i in range(1, n+1)]
-        equilibrium_cycle(tasks)
-    except ValueError:
-        print("Введите число.")
+        elif choice == "1":
+            tasks = [f"Task{i}" for i in range(1, 9)]
+            equilibrium_cycle(tasks)
+        elif choice == "2":
+            tasks = [f"Task{i}" for i in range(1, 16)]
+            equilibrium_cycle(tasks)
+        elif choice == "3":
+            print("Введите количество задач по очереди, 0 чтобы закончить:")
+            while True:
+                try:
+                    n = int(input("Количество задач: "))
+                    if n == 0:
+                        break
+                    tasks = [f"Task{i}" for i in range(1, n+1)]
+                    equilibrium_cycle(tasks)
+                except ValueError:
+                    print("Введите число.")
+        else:
+            print("Неверный выбор. Попробуйте снова.")
+
+# Запуск меню
+run_scenario()
