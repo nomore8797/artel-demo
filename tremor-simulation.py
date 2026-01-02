@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 class Block:
     def __init__(self, name):
         self.name = name
@@ -6,8 +8,8 @@ class Block:
     def receive(self, tasks):
         self.buffer.extend(tasks)
 
-    def status(self):
-        return f"{self.name} buffer: {len(self.buffer)} tasks"
+    def size(self):
+        return len(self.buffer)
 
 # Инициализация модулей
 inputs = Block("Inputs")
@@ -16,36 +18,43 @@ curator = Block("Curator")
 core = Block("Core")
 platform = Block("Platform")
 outputs = Block("Outputs")
+blocks = [inputs, ai, curator, core, platform, outputs]
 
-def show_buffers():
-    for b in [inputs, ai, curator, core, platform, outputs]:
-        print(b.status())
-    print("-" * 40)
+def show_graph(step_label="Step"):
+    names = [b.name for b in blocks]
+    sizes = [b.size() for b in blocks]
+    plt.bar(names, sizes, color='skyblue')
+    plt.ylim(0, max(10, max(sizes)+2))
+    plt.title(f"Buffer sizes — {step_label}")
+    plt.ylabel("Number of tasks")
+    plt.show(block=False)
+    plt.pause(0.8)
+    plt.clf()
 
 def equilibrium_cycle(tasks):
-    print("\n=== Incoming tasks ===")
+    # Step 1: Inputs
     inputs.receive(tasks)
-    show_buffers()
+    show_graph("Incoming tasks")
     
+    # Step 2: AI & Curator перераспределяют
     half = len(inputs.buffer)//2
     ai.receive(inputs.buffer[:half])
     curator.receive(inputs.buffer[half:])
     inputs.buffer.clear()
-    print("=== After AI & Curator redistribute ===")
-    show_buffers()
+    show_graph("After AI & Curator redistribute")
     
+    # Step 3: Core получает поток
     core.receive(ai.buffer + curator.buffer)
     ai.buffer.clear()
     curator.buffer.clear()
-    print("=== After Core receives tasks ===")
-    show_buffers()
+    show_graph("After Core receives tasks")
     
+    # Step 4: Platform & Outputs распределение
     half_core = len(core.buffer)//2
     platform.receive(core.buffer[:half_core])
     outputs.receive(core.buffer[half_core:])
     core.buffer.clear()
-    print("=== Final distribution to Platform & Outputs ===")
-    show_buffers()
+    show_graph("Final distribution to Platform & Outputs")
 
 # --- Меню сценариев ---
 def run_scenario():
@@ -83,3 +92,4 @@ def run_scenario():
 
 # Запуск меню
 run_scenario()
+plt.close()
