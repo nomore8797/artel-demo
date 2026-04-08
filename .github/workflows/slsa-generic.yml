@@ -1,0 +1,55 @@
+name: SLSA Generic (artel-demo)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ========================================================
+      # Step 1: Подготовка артефактов
+      # ========================================================
+      - name: Prepare artifacts
+        run: |
+          cp artel_mini.py artifact_artel_mini.py
+          cp slsa-generic.yml artifact_slsa-generic.yml
+
+      # ========================================================
+      # Step 2: Генерация SHA256 и Base64
+      # ========================================================
+      - name: Generate digests
+        id: hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          files="artifact_artel_mini.py artifact_slsa-generic.yml"
+          digests=""
+          for f in $files; do
+            sum=$(sha256sum "$f" | cut -d ' ' -f1)
+            digests="$digests$sum "
+          done
+          digests=$(echo $digests | base64)
+          echo "digests=$digests" >> $GITHUB_OUTPUT
+
+  provenance:
+    needs: build
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.4.0
+    with:
+      base64-subjects: "${{ needs.build.outputs.digests }}"
+      upload-assets: true

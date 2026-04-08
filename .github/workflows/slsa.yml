@@ -1,5 +1,4 @@
-name: SLSA Workflow
-
+name: SLSA OSSF generator
 on:
   workflow_dispatch:
   release:
@@ -10,16 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       digests: ${{ steps.hash.outputs.digests }}
+
     steps:
       - uses: actions/checkout@v4
 
-      # Шаг 1: собираем артефакты
       - name: Build artifacts
         run: |
           echo "artifact1" > artifact1
           echo "artifact2" > artifact2
 
-      # Шаг 2: генерируем субъекты для SLSA
       - name: Generate subject for provenance
         id: hash
         run: |

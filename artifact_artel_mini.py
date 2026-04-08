@@ -1,8 +1,4 @@
-#artel-demo
-Research demonstrator: minimal architecture prototype
-
-```python
-class Block:
+<код>=<class Block:
     def __init__(self, name):
         self.name = name
 
@@ -29,7 +25,4 @@ links = [
 ]
 
 for l in links:
-    print(l)
-```
-
-
+    print(l)>
